@@ -1,6 +1,6 @@
 const Post = require("../models/Post.js");
 const Category = require("../models/Category.js");
-const User = require("../models/User.js"); 
+const User = require("../models/User.js");
 const { validationResult } = require("express-validator");
 
 // Custom error class (re-defined here for clarity, but ideally in a separate utils file)
@@ -102,10 +102,12 @@ exports.createPost = async (req, res, next) => {
 
     // Temporary: Since auth is not implemented, we manually set a dummy author for now.
     // Replace this with req.user.id when auth is ready (Task 5).
-    const dummyUser = await User.findOne({});
+    // Check if a user exists
+    let dummyUser = await User.findOne({});
+
+    // If no user found, create one and UPDATE the dummyUser variable
     if (!dummyUser) {
-      // Create a dummy user if none exist to satisfy the 'required' author field
-      await User.create({
+      dummyUser = await User.create({
         username: "system_author",
         email: "system@blog.com",
       });
