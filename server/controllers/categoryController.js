@@ -1,4 +1,5 @@
 const Category = require('../models/Category');
+const slugify = require('slugify');
 
 class ApiError extends Error {
   constructor(message, statusCode) {
@@ -25,16 +26,23 @@ exports.getCategories = async (req, res, next) => {
 
 // @desc    Create a new category
 // @route   POST /api/categories
-// @access  Private 
+// @access  Private
 exports.createCategory = async (req, res, next) => {
   try {
     const { name, description } = req.body;
+
     let category = await Category.findOne({ name });
     if (category) {
       return next(new ApiError('Category already exists', 400));
     }
 
-    category = await Category.create({ name, description });
+    const slug = slugify(name, { lower: true, strict: true });
+
+    category = await Category.create({
+      name,
+      description,
+      slug,
+    });
 
     res.status(201).json({
       success: true,

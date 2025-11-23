@@ -1,39 +1,33 @@
-const mongoose = require('mongoose');
+const mongoose = require("mongoose");
+const slugify = require("slugify");
 
 const CategorySchema = new mongoose.Schema(
   {
     name: {
       type: String,
-      required: [true, 'Category name is required'],
+      required: [true, "Category name is required"],
       unique: true,
       trim: true,
-      maxlength: [50, 'Name cannot be more than 50 characters'],
     },
     slug: {
       type: String,
-      required: true,
+      // required: [true, "Category slug is required"],
       unique: true,
     },
     description: {
       type: String,
-      maxlength: [200, 'Description cannot be more than 200 characters'],
+      default: "",
     },
   },
   { timestamps: true }
 );
 
-// Pre-save hook to generate a slug from the category name
-CategorySchema.pre('save', function (next) {
-  if (!this.isModified('name')) {
-    return next();
+// Automatically generate slug if not provided
+CategorySchema.pre("save", function (next) {
+  if (this.isModified("name")) {
+    this.slug = slugify(this.name, { lower: true, strict: true });
   }
-
-  this.slug = this.name
-    .toLowerCase()
-    .replace(/[^\w ]+/g, '')
-    .replace(/ +/g, '-');
-    
   next();
 });
 
-module.exports = mongoose.model('Category', CategorySchema);
+module.exports = mongoose.model("Category", CategorySchema);
