@@ -7,7 +7,7 @@ const path = require("path");
 // Import routes
 const postRoutes = require("./routes/posts.js");
 const categoryRoutes = require("./routes/categories.js");
-const authRoutes = require('./routes/auth');
+const authRoutes = require('./routes/auth'); // <--- UNCOMMENTED THIS
 
 // Load environment variables
 dotenv.config();
@@ -21,7 +21,7 @@ app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Serve uploaded files
+// Serve uploaded files (Important for the images you just implemented)
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
 // Log requests in development mode
@@ -35,7 +35,7 @@ if (process.env.NODE_ENV === "development") {
 // API routes
 app.use("/api/posts", postRoutes);
 app.use("/api/categories", categoryRoutes);
-app.use('/api/auth', authRoutes);
+app.use('/api/auth', authRoutes); // <--- UNCOMMENTED THIS
 
 // Root route
 app.get("/", (req, res) => {

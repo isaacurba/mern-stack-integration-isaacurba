@@ -194,3 +194,33 @@ exports.deletePost = async (req, res, next) => {
     next(err);
   }
 };
+
+// @desc    Add a comment to a post
+// @route   POST /api/posts/:id/comments
+// @access  Private
+exports.addComment = async (req, res, next) => {
+  try {
+    const { content } = req.body;
+    const post = await Post.findById(req.params.id);
+
+    if (!post) {
+      return next(new ApiError("Post not found", 404));
+    }
+
+    // Create the comment object
+    const comment = {
+      user: req.user.id, // From auth middleware
+      content,
+    };
+
+    // Add to array
+    post.comments.push(comment);
+
+    // Save the post
+    await post.save();
+
+    res.status(201).json({ success: true, data: post.comments });
+  } catch (err) {
+    next(err);
+  }
+};

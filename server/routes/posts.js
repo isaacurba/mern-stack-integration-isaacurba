@@ -1,35 +1,44 @@
-// server/routes/posts.js
-
-const express = require('express');
-const { body } = require('express-validator');
-const { 
-  getPosts, 
-  getPost, 
-  createPost, 
-  updatePost, 
-  deletePost 
-} = require('../controllers/postController');
-const upload = require('../middleware/uploadMiddleware'); // <--- Import Multer
-// const { protect } = require('../middleware/authMiddleware'); // (Enable this later if you want protection)
+const express = require("express");
+const { body } = require("express-validator");
+const {
+  getPosts,
+  getPost,
+  createPost,
+  updatePost,
+  deletePost,
+  addComment,
+} = require("../controllers/postController");
+const upload = require("../middleware/uploadMiddleware");
+const { protect } = require("../middleware/authMiddleware"); // <--- 1. IMPORT THIS
 
 const router = express.Router();
 
 // Validation rules
 const postValidationRules = [
-  body('title').notEmpty().withMessage('Title is required'),
-  body('content').notEmpty().withMessage('Content is required'),
-  body('category').isMongoId().withMessage('Invalid Category ID'),
-  // Note: We can't validate the file here easily with express-validator, handled in controller
+  body("title").notEmpty().withMessage("Title is required"),
+  body("content").notEmpty().withMessage("Content is required"),
+  body("category").isMongoId().withMessage("Invalid Category ID"),
 ];
 
-router.route('/')
+router
+  .route("/")
   .get(getPosts)
-  // Add 'upload.single('featuredImage')' to handle the file upload
-  .post(upload.single('featuredImage'), postValidationRules, createPost); 
+  // 2. ADD 'protect' HERE before the upload middleware
+  .post(
+    protect,
+    upload.single("featuredImage"),
+    postValidationRules,
+    createPost
+  );
 
-router.route('/:id')
+router
+  .route("/:id")
   .get(getPost)
-  .put(upload.single('featuredImage'), postValidationRules, updatePost) // Allow updates too
-  .delete(deletePost);
+  // 3. ADD 'protect' HERE
+  .put(protect, upload.single("featuredImage"), postValidationRules, updatePost)
+  // 4. ADD 'protect' HERE
+  .delete(protect, deletePost);
+
+router.route("/:id/comments").post(protect, addComment);
 
 module.exports = router;
