@@ -88,6 +88,57 @@ exports.getPost = async (req, res, next) => {
   }
 };
 
+
+// @desc    Get all posts (with Search & Pagination)
+// @route   GET /api/posts
+// @access  Public
+exports.getPosts = async (req, res, next) => {
+  try {
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 5; // Changed default to 5 to test pagination easily
+    const startIndex = (page - 1) * limit;
+
+    // 1. Base Query: Always show published posts
+    const query = { isPublished: true };
+
+    // 2. Filter by Category (if provided)
+    if (req.query.category) {
+      const category = await Category.findOne({ slug: req.query.category });
+      if (category) {
+        query.category = category._id;
+      }
+    }
+
+    // 3. Filter by Search Keyword (Title)
+    if (req.query.search) {
+      // Regex allows "partial match" and 'i' means case-insensitive
+      query.title = { $regex: req.query.search, $options: "i" };
+    }
+
+    const total = await Post.countDocuments(query);
+
+    const posts = await Post.find(query)
+      .sort({ createdAt: -1 })
+      .limit(limit)
+      .skip(startIndex)
+      .populate("category", "name slug")
+      .populate("author", "username");
+
+    res.status(200).json({
+      success: true,
+      count: posts.length,
+      page,
+      pages: Math.ceil(total / limit),
+      totalPosts: total,
+      data: posts,
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+
+// ... (Keep the rest of the file: getPost, createPost, addComment, etc.)
+
 // @desc    Create a new blog post
 // @route   POST /api/posts
 // @access  Private (Requires Auth)

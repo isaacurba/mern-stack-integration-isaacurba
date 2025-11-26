@@ -6,14 +6,14 @@ const {
   createPost,
   updatePost,
   deletePost,
-  addComment,
 } = require("../controllers/postController");
+
+// IMPORT THE MISSING MIDDLEWARE
 const upload = require("../middleware/uploadMiddleware");
-const { protect } = require("../middleware/authMiddleware"); // <--- 1. IMPORT THIS
+const { protect } = require("../middleware/authMiddleware");
 
 const router = express.Router();
 
-// Validation rules
 const postValidationRules = [
   body("title").notEmpty().withMessage("Title is required"),
   body("content").notEmpty().withMessage("Content is required"),
@@ -23,7 +23,7 @@ const postValidationRules = [
 router
   .route("/")
   .get(getPosts)
-  // 2. ADD 'protect' HERE before the upload middleware
+  // ADD protect AND upload middleware here
   .post(
     protect,
     upload.single("featuredImage"),
@@ -34,11 +34,9 @@ router
 router
   .route("/:id")
   .get(getPost)
-  // 3. ADD 'protect' HERE
+  // ADD protect AND upload middleware here
   .put(protect, upload.single("featuredImage"), postValidationRules, updatePost)
-  // 4. ADD 'protect' HERE
+  // ADD protect middleware here
   .delete(protect, deletePost);
-
-router.route("/:id/comments").post(protect, addComment);
 
 module.exports = router;

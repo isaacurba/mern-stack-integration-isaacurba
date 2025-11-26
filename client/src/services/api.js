@@ -1,8 +1,8 @@
-import axios from 'axios';
+import axios from "axios";
 
 // Create axios instance with base URL
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || 'http://localhost:5000/api',
+  baseURL: import.meta.env.VITE_API_URL || "http://localhost:5000/api",
   headers: {
     // 'Content-Type': 'application/json',
   },
@@ -11,7 +11,7 @@ const api = axios.create({
 // Add request interceptor for authentication
 api.interceptors.request.use(
   (config) => {
-    const token = localStorage.getItem('token');
+    const token = localStorage.getItem("token");
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
@@ -28,9 +28,9 @@ api.interceptors.response.use(
   (error) => {
     // Handle authentication errors
     if (error.response && error.response.status === 401) {
-      localStorage.removeItem('token');
-      localStorage.removeItem('user');
-      window.location.href = '/login';
+      localStorage.removeItem("token");
+      localStorage.removeItem("user");
+      window.location.href = "/login";
     }
     return Promise.reject(error);
   }
@@ -39,10 +39,13 @@ api.interceptors.response.use(
 // Post API services
 export const postService = {
   // Get all posts with optional pagination and filters
-  getAllPosts: async (page = 1, limit = 10, category = null) => {
-    let url = `/posts?page=${page}&limit=${limit}`; 
+  getAllPosts: async (page = 1, limit = 5, category = null, search = "") => {
+    let url = `/posts?page=${page}&limit=${limit}`;
     if (category) {
       url += `&category=${category}`;
+    }
+    if (search) {
+      url += `&search=${search}`; // Add search query
     }
     const response = await api.get(url);
     return response.data;
@@ -56,7 +59,7 @@ export const postService = {
 
   // Create a new post
   createPost: async (postData) => {
-    const response = await api.post('/posts', postData);
+    const response = await api.post("/posts", postData);
     return response.data;
   },
 
@@ -89,13 +92,13 @@ export const postService = {
 export const categoryService = {
   // Get all categories
   getAllCategories: async () => {
-    const response = await api.get('/categories');
+    const response = await api.get("/categories");
     return response.data;
   },
 
   // Create a new category
   createCategory: async (categoryData) => {
-    const response = await api.post('/categories', categoryData);
+    const response = await api.post("/categories", categoryData);
     return response.data;
   },
 };
@@ -104,31 +107,31 @@ export const categoryService = {
 export const authService = {
   // Register a new user
   register: async (userData) => {
-    const response = await api.post('/auth/register', userData);
+    const response = await api.post("/auth/register", userData);
     return response.data;
   },
 
   // Login user
   login: async (credentials) => {
-    const response = await api.post('/auth/login', credentials);
+    const response = await api.post("/auth/login", credentials);
     if (response.data.token) {
-      localStorage.setItem('token', response.data.token);
-      localStorage.setItem('user', JSON.stringify(response.data.user));
+      localStorage.setItem("token", response.data.token);
+      localStorage.setItem("user", JSON.stringify(response.data.user));
     }
     return response.data;
   },
 
   // Logout user
   logout: () => {
-    localStorage.removeItem('token');
-    localStorage.removeItem('user');
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
   },
 
   // Get current user
   getCurrentUser: () => {
-    const user = localStorage.getItem('user');
+    const user = localStorage.getItem("user");
     return user ? JSON.parse(user) : null;
   },
 };
 
-export default api; 
+export default api;

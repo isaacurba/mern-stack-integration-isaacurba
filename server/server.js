@@ -7,7 +7,7 @@ const path = require("path");
 // Import routes
 const postRoutes = require("./routes/posts.js");
 const categoryRoutes = require("./routes/categories.js");
-const authRoutes = require('./routes/auth'); // <--- UNCOMMENTED THIS
+const authRoutes = require('./routes/auth'); 
 
 // Load environment variables
 dotenv.config();

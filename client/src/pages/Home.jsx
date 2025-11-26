@@ -1,49 +1,104 @@
-import React from 'react';
-import useFetchData from '../hooks/useFetchData';
-import { postService } from '../services/api'; 
-import PostCard from '../components/PostCard'; 
+// client/src/pages/Home.jsx
+
+import React, { useState, useEffect } from 'react';
+import { postService } from '../services/api';
+import PostCard from '../components/PostCard';
 
 const Home = () => {
-  // Task 3: Use the custom hook for state management (loading, error) and API calls
-  const { 
-    data: posts, 
-    loading, 
-    error 
-  } = useFetchData(postService.getAllPosts); // Calls GET /api/posts
+  const [posts, setPosts] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  
+  // Search & Pagination State
+  const [search, setSearch] = useState('');
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
 
-  // --- Task 4: Handle loading and error states ---
+  // Fetch posts whenever page or search changes
+  useEffect(() => {
+    const fetchPosts = async () => {
+      setLoading(true);
+      try {
+        // Pass page, limit(5), category(null), and search term
+        const response = await postService.getAllPosts(page, 5, null, search);
+        setPosts(response.data);
+        setTotalPages(response.pages);
+      } catch (err) {
+        setError('Failed to fetch posts');
+      } finally {
+        setLoading(false);
+      }
+    };
 
-  if (loading) {
-    return <div className="text-center py-10 text-xl font-semibold text-gray-600">Loading posts...</div>;
-  }
+    // Debounce search (wait 500ms after typing stops to call API)
+    const timeoutId = setTimeout(() => {
+      fetchPosts();
+    }, 500);
 
-  if (error) {
-    return (
-      <div className="text-center py-10 text-xl font-bold text-red-600 border border-red-300 bg-red-50 p-6 rounded">
-        Error fetching posts: {error}
-      </div>
-    );
-  }
+    return () => clearTimeout(timeoutId);
+  }, [page, search]);
 
-  // --- Task 3: Post list view ---
+  // Handle Search Input
+  const handleSearch = (e) => {
+    setSearch(e.target.value);
+    setPage(1); // Reset to page 1 when searching
+  };
 
   return (
     <div>
-      <h1 className="text-3xl font-bold text-gray-800 mb-6 border-b pb-2">Latest Blog Posts</h1>
-      <div className="post-list space-y-4">
-        {posts && posts.length > 0 ? (
-          posts.map(post => (
-            <PostCard key={post._id} post={post} /> 
-          ))
-        ) : (
-          <p className="text-lg text-gray-500 text-center py-10">
-            No published posts found. Create one via the API or frontend form!
-          </p>
-        )}
+      <div className="flex flex-col md:flex-row justify-between items-center mb-8 border-b pb-6">
+        <h1 className="text-3xl font-bold text-gray-800 mb-4 md:mb-0">Latest Articles</h1>
+        
+        {/* Search Bar */}
+        <input
+          type="text"
+          placeholder="Search posts..."
+          value={search}
+          onChange={handleSearch}
+          className="w-full md:w-64 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none"
+        />
       </div>
-      {/* Pagination will go here later (Task 5) */}
+
+      {loading ? (
+        <div className="text-center py-20 text-xl text-gray-500">Loading...</div>
+      ) : error ? (
+        <div className="text-center py-20 text-red-500">{error}</div>
+      ) : (
+        <div className="space-y-6">
+          {posts.length > 0 ? (
+            posts.map((post) => <PostCard key={post._id} post={post} />)
+          ) : (
+            <div className="text-center py-20 bg-gray-50 rounded-lg">
+              <p className="text-gray-600 text-lg">No posts found matching "{search}"</p>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Pagination Controls */}
+      {totalPages > 1 && (
+        <div className="flex justify-center mt-10 space-x-4">
+          <button
+            disabled={page <= 1}
+            onClick={() => setPage(page - 1)}
+            className="px-4 py-2 bg-white border border-gray-300 rounded hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            &larr; Previous
+          </button>
+          <span className="px-4 py-2 text-gray-700 font-medium">
+            Page {page} of {totalPages}
+          </span>
+          <button
+            disabled={page >= totalPages}
+            onClick={() => setPage(page + 1)}
+            className="px-4 py-2 bg-white border border-gray-300 rounded hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            Next &rarr;
+          </button>
+        </div>
+      )}
     </div>
   );
 };
 
-export default Home;
+export default Home;F
