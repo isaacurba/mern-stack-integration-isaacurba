@@ -50,10 +50,14 @@ const SinglePost = () => {
     }
   };
 
-  // Helper for Image URL
+// Helper for Image URL
   const getImageUrl = (imagePath) => {
     if (!imagePath || imagePath === 'default-post.jpg') return null;
-    return `http://localhost:5000/${imagePath.replace(/\\/g, "/")}`;
+    
+    const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+    const serverUrl = apiUrl.replace('/api', '');
+
+    return `${serverUrl}/${imagePath.replace(/\\/g, "/")}`;
   };
 
   if (loading) return <div className="text-center py-20 text-xl text-gray-500">Loading...</div>;

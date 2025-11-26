@@ -2,13 +2,20 @@ import React from "react";
 import { Link } from "react-router-dom";
 
 const PostCard = ({ post }) => {
-  // Helper to construct image URL
+  
+// Helper to construct image URL
   const getImageUrl = (imagePath) => {
-    if (!imagePath || imagePath === "default-post.jpg") return null;
-    // Replace backslashes (Windows) with forward slashes and prepend server URL
-    return `http://localhost:5000/${imagePath.replace(/\\/g, "/")}`;
-  };
+    if (!imagePath || imagePath === 'default-post.jpg') return null;
+    
+    // 1. Get the API URL (e.g., "https://app.onrender.com/api")
+    const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+    
+    // 2. Remove "/api" from the end to get the Server Root
+    const serverUrl = apiUrl.replace('/api', '');
 
+    // 3. Construct the full URL
+    return `${serverUrl}/${imagePath.replace(/\\/g, "/")}`;
+  };
   const imageUrl = getImageUrl(post.featuredImage);
 
   return (
