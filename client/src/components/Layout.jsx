@@ -1,17 +1,15 @@
+// client/src/components/Layout.jsx
+
 import React from "react";
 import { Outlet, Link, useNavigate } from "react-router-dom";
 import { authService } from "../services/api";
 
 const Layout = () => {
   const navigate = useNavigate();
-  
-  // 1. Check if user is logged in
   const user = authService.getCurrentUser();
 
-  // 2. Handle Logout
   const handleLogout = () => {
     authService.logout();
-    // Redirect to login and refresh to update navbar state
     window.location.href = '/login'; 
   };
 
@@ -25,34 +23,41 @@ const Layout = () => {
             MERN Blog
           </Link>
 
-          {/* Navigation Links */}
+          {/* Navigation */}
           <nav>
             <ul className="flex items-center space-x-6">
+              
+              {/* 1. Main Navigation Links (Always First) */}
               <li>
                 <Link to="/" className="hover:text-indigo-200 transition font-medium">
                   Home
                 </Link>
               </li>
 
-              {/* 3. Conditional Rendering */}
               {user ? (
                 <>
-                  {/* SHOW IF LOGGED IN */}
-                  <li>
-                    <span className="text-indigo-200 text-sm mr-2">Hello, {user.username}</span>
-                  </li>
+                  {/* 2. 'Write Post' is now grouped with Home */}
                   <li>
                     <Link
                       to="/create"
-                      className="bg-white text-indigo-600 px-4 py-2 rounded-md font-bold hover:bg-indigo-50 transition shadow-sm"
+                      className="text-white hover:text-indigo-200 transition font-medium"
                     >
                       Write Post
                     </Link>
                   </li>
+
+                  {/* 3. Separator / User Info (Pushed to the right) */}
+                  <li className="h-6 w-px bg-indigo-400 mx-2"></li> {/* Vertical Divider */}
+                  
+                  <li>
+                    <span className="text-indigo-200 text-sm font-semibold">
+                      {user.username}
+                    </span>
+                  </li>
                   <li>
                     <button
                       onClick={handleLogout}
-                      className="text-red-200 hover:text-white transition font-medium border border-transparent hover:border-red-200 px-3 py-1 rounded"
+                      className="bg-indigo-700 hover:bg-indigo-800 text-white text-sm px-4 py-2 rounded shadow-sm transition"
                     >
                       Logout
                     </button>
@@ -60,7 +65,7 @@ const Layout = () => {
                 </>
               ) : (
                 <>
-                  {/* SHOW IF LOGGED OUT */}
+                  {/* Guest Options */}
                   <li>
                     <Link to="/login" className="hover:text-indigo-200 transition font-medium">
                       Login
@@ -69,7 +74,7 @@ const Layout = () => {
                   <li>
                     <Link
                       to="/register"
-                      className="bg-indigo-500 px-4 py-2 rounded-md hover:bg-indigo-400 transition font-medium"
+                      className="bg-white text-indigo-600 px-4 py-2 rounded-md font-bold hover:bg-indigo-50 transition shadow-sm"
                     >
                       Sign Up
                     </Link>

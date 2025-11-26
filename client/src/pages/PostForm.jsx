@@ -8,16 +8,17 @@ const PostForm = () => {
   const { id } = useParams();
   const navigate = useNavigate();
 
-  // 1. Added 'isPublished' to the initial state
   const [formData, setFormData] = useState({
     title: '',
     content: '',
     excerpt: '',
     category: '',
-    isPublished: true, // Default to true so new posts appear immediately!
+    isPublished: true,
+    featuredImage: null, // New state for the file
   });
   
   const [categories, setCategories] = useState([]);
+  const [preview, setPreview] = useState(null); // To show image preview
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
@@ -26,7 +27,6 @@ const PostForm = () => {
       setLoading(true);
       try {
         const cats = await categoryService.getAllCategories();
-        // Handle different response structures just in case
         setCategories(Array.isArray(cats) ? cats : cats.data || []);
 
         if (id) {
@@ -37,10 +37,15 @@ const PostForm = () => {
             title: post.title,
             content: post.content,
             excerpt: post.excerpt || '',
-            // Handle populated category object OR plain ID string
             category: post.category?._id || post.category || '',
-            isPublished: post.isPublished, // Load existing publish status
+            isPublished: post.isPublished,
+            featuredImage: post.featuredImage, // Keep existing image string
           });
+          // If there is an existing image, set it as preview
+          if (post.featuredImage && !post.featuredImage.startsWith('default')) {
+             // Note: You might need to fix the URL path depending on how you serve static files
+             setPreview(`http://localhost:5000/${post.featuredImage.replace(/\\/g, '/')}`);
+          }
         }
       } catch (err) {
         setError('Failed to load data');
@@ -54,12 +59,18 @@ const PostForm = () => {
   }, [id]);
 
   const handleChange = (e) => {
-    const { name, value, type, checked } = e.target;
-    setFormData({
-      ...formData,
-      // Handle Checkbox (checked) vs Text Input (value)
-      [name]: type === 'checkbox' ? checked : value,
-    });
+    const { name, value, type, checked, files } = e.target;
+    
+    if (type === 'file') {
+      const file = files[0];
+      setFormData({ ...formData, featuredImage: file });
+      setPreview(URL.createObjectURL(file)); // Show preview of selected file
+    } else {
+      setFormData({
+        ...formData,
+        [name]: type === 'checkbox' ? checked : value,
+      });
+    }
   };
 
   const handleSubmit = async (e) => {
@@ -67,11 +78,24 @@ const PostForm = () => {
     setLoading(true);
     setError(null);
 
+    // 1. Create FormData object (Required for file uploads)
+    const data = new FormData();
+    data.append('title', formData.title);
+    data.append('content', formData.content);
+    data.append('excerpt', formData.excerpt);
+    data.append('category', formData.category);
+    data.append('isPublished', formData.isPublished);
+    
+    // Only append image if it's a new file (not a string from DB)
+    if (formData.featuredImage instanceof File) {
+      data.append('featuredImage', formData.featuredImage);
+    }
+
     try {
       if (id) {
-        await postService.updatePost(id, formData);
+        await postService.updatePost(id, data);
       } else {
-        await postService.createPost(formData);
+        await postService.createPost(data);
       }
       navigate('/');
     } catch (err) {
@@ -91,8 +115,27 @@ const PostForm = () => {
 
       {error && <div className="bg-red-100 text-red-700 p-3 rounded mb-4">{error}</div>}
 
-      <form onSubmit={handleSubmit} className="space-y-6">
+      <form onSubmit={handleSubmit} className="space-y-6" encType="multipart/form-data">
         
+        {/* Image Upload Field */}
+        <div>
+          <label className="block text-gray-700 font-semibold mb-2">Cover Image</label>
+          
+          {preview && (
+            <div className="mb-3">
+              <img src={preview} alt="Preview" className="w-full h-48 object-cover rounded-md border" />
+            </div>
+          )}
+          
+          <input 
+            type="file" 
+            name="featuredImage" 
+            accept="image/*"
+            onChange={handleChange}
+            className="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100"
+          />
+        </div>
+
         {/* Title */}
         <div>
           <label className="block text-gray-700 font-semibold mb-2">Title</label>
@@ -107,7 +150,7 @@ const PostForm = () => {
           />
         </div>
 
-        {/* Category & Published Status Row */}
+        {/* Category & Published */}
         <div className="flex gap-6">
           <div className="flex-1">
             <label className="block text-gray-700 font-semibold mb-2">Category</label>
@@ -127,7 +170,6 @@ const PostForm = () => {
             </select>
           </div>
 
-          {/* NEW: Published Checkbox */}
           <div className="flex items-center pt-8">
             <label className="flex items-center space-x-2 cursor-pointer">
               <input

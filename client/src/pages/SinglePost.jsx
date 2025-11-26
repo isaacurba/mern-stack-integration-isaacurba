@@ -3,11 +3,12 @@
 import React from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import useFetchData from "../hooks/useFetchData";
-import { postService } from "../services/api";
+import { postService, authService } from "../services/api"; // Import authService to check ownership
 
 const SinglePost = () => {
   const { slug } = useParams();
-  const navigate = useNavigate(); // Hook to redirect after delete
+  const navigate = useNavigate();
+  const currentUser = authService.getCurrentUser();
 
   const {
     data: post,
@@ -15,65 +16,122 @@ const SinglePost = () => {
     error,
   } = useFetchData(() => postService.getPost(slug), [slug]);
 
-  // --- Handle Delete ---
   const handleDelete = async () => {
     if (window.confirm("Are you sure you want to delete this post?")) {
       try {
         await postService.deletePost(post._id);
         alert("Post deleted successfully");
-        navigate("/"); // Redirect to home page
+        navigate("/");
       } catch (err) {
-        alert("Failed to delete post: " + (err.response?.data?.error || err.message));
+        alert("Failed to delete post");
       }
     }
   };
 
-  if (loading) return <div className="text-center py-12 text-2xl text-gray-600">Loading Article...</div>;
-  
-  if (error) return (
-    <div className="text-center py-12 text-red-600 text-xl">
-      Error loading post: {error}
-    </div>
-  );
+  // Helper for Image URL
+  const getImageUrl = (imagePath) => {
+    if (!imagePath || imagePath === "default-post.jpg") return null;
+    return `http://localhost:5000/${imagePath.replace(/\\/g, "/")}`;
+  };
 
-  if (!post) return <div className="text-center py-12 text-2xl">Post Not Found</div>;
+  if (loading)
+    return (
+      <div className="text-center py-20 text-xl text-gray-500">Loading...</div>
+    );
+  if (error)
+    return (
+      <div className="text-center py-20 text-xl text-red-500">
+        Error: {error}
+      </div>
+    );
+  if (!post)
+    return <div className="text-center py-20 text-xl">Post not found</div>;
+
+  const imageUrl = getImageUrl(post.featuredImage);
+  // Check if current user is the author
+  const isAuthor =
+    currentUser && post.author && currentUser.id === post.author._id;
 
   return (
-    <div className="max-w-4xl mx-auto bg-white p-8 shadow-xl rounded-lg border-t-4 border-blue-500">
-      <h1 className="text-4xl font-extrabold text-gray-900 mb-4">
-        {post.title}
-      </h1>
+    <article className="max-w-4xl mx-auto bg-white shadow-lg rounded-xl overflow-hidden my-8">
+      {/* Hero Image */}
+      {imageUrl && (
+        <div className="w-full h-96 relative">
+          <img
+            src={imageUrl}
+            alt={post.title}
+            className="w-full h-full object-cover"
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
+          <div className="absolute bottom-0 left-0 p-8 text-white">
+            <span className="bg-indigo-600 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider mb-2 inline-block">
+              {post.category?.name}
+            </span>
+            <h1 className="text-4xl font-extrabold text-white shadow-sm">
+              {post.title}
+            </h1>
+          </div>
+        </div>
+      )}
 
-      <div className="text-sm text-gray-500 mb-6 border-b pb-4">
-        <span className="font-semibold">Author:</span> {post.author?.username || "Unknown"}
-        <span className="mx-2">|</span>
-        <span className="font-semibold">Category:</span> {post.category?.name || "Uncategorized"}
-        <span className="mx-2">|</span>
-        <span className="font-semibold">Views:</span> {post.viewCount}
-      </div>
+      <div className="p-8 md:p-12">
+        {/* Fallback Title if no image */}
+        {!imageUrl && (
+          <div className="border-b pb-6 mb-6">
+            <span className="text-indigo-600 font-bold tracking-wide text-sm uppercase">
+              {post.category?.name}
+            </span>
+            <h1 className="text-4xl font-extrabold text-gray-900 mt-2">
+              {post.title}
+            </h1>
+          </div>
+        )}
 
-      <div className="text-lg text-gray-800 leading-relaxed whitespace-pre-wrap mb-8">
-        {post.content}
-      </div>
+        {/* Metadata */}
+        <div className="flex items-center justify-between text-sm text-gray-500 mb-8">
+          <div className="flex items-center space-x-2">
+            <div className="w-8 h-8 bg-indigo-100 rounded-full flex items-center justify-center text-indigo-700 font-bold">
+              {post.author?.username?.[0]?.toUpperCase()}
+            </div>
+            <span className="font-medium text-gray-900">
+              {post.author?.username}
+            </span>
+            <span>•</span>
+            <span>
+              {new Date(post.createdAt).toLocaleDateString(undefined, {
+                dateStyle: "long",
+              })}
+            </span>
+          </div>
+          <div className="flex items-center space-x-4">
+            <span>👁️ {post.viewCount} views</span>
+          </div>
+        </div>
 
-      {/* Action Buttons */}
-      <div className="pt-6 border-t flex justify-end space-x-4">
-        <Link
-          to={`/edit/${post._id}`}
-          className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition"
-        >
-          Edit Post
-        </Link>
-        
-        {/* NEW: Delete Button */}
-        <button
-          onClick={handleDelete}
-          className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 transition"
-        >
-          Delete Post
-        </button>
+        {/* Content */}
+        <div className="prose max-w-none text-gray-800 leading-relaxed text-lg whitespace-pre-wrap">
+          {post.content}
+        </div>
+
+        {/* Action Buttons (Only visible to Author) */}
+        {isAuthor && (
+          <div className="mt-12 pt-6 border-t border-gray-100 flex justify-end space-x-4">
+            <Link
+              to={`/edit/${post._id}`}
+              className="px-6 py-2 bg-gray-100 text-gray-700 rounded-lg font-medium hover:bg-gray-200 transition"
+            >
+              Edit Post
+            </Link>
+            <button
+              onClick={handleDelete}
+              className="px-6 py-2 bg-red-50 text-red-600 rounded-lg font-medium hover:bg-red-100 transition"
+            >
+              Delete Post
+            </button>
+          </div>
+        )}
       </div>
-    </div>
+    </article>
   );
 };
 

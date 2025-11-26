@@ -1,6 +1,7 @@
+// server/routes/posts.js
+
 const express = require('express');
 const { body } = require('express-validator');
-
 const { 
   getPosts, 
   getPost, 
@@ -8,37 +9,27 @@ const {
   updatePost, 
   deletePost 
 } = require('../controllers/postController');
-// const { protect } = require('../middleware/authMiddleware'); // For Task 5
-    
+const upload = require('../middleware/uploadMiddleware'); // <--- Import Multer
+// const { protect } = require('../middleware/authMiddleware'); // (Enable this later if you want protection)
+
 const router = express.Router();
 
-// Validation rules for post creation and update
+// Validation rules
 const postValidationRules = [
-  body('title')
-    .notEmpty()
-    .withMessage('Title is required')
-    .isLength({ max: 100 })
-    .withMessage('Title cannot be more than 100 characters'),
-  body('content')
-    .notEmpty()
-    .withMessage('Content is required'),
-  body('category')
-    .isMongoId()
-    .withMessage('Category ID is required and must be a valid ID'),
+  body('title').notEmpty().withMessage('Title is required'),
+  body('content').notEmpty().withMessage('Content is required'),
+  body('category').isMongoId().withMessage('Invalid Category ID'),
+  // Note: We can't validate the file here easily with express-validator, handled in controller
 ];
 
-// Base path: /api/posts
 router.route('/')
   .get(getPosts)
-  // Temporarily unprotected. Will add protect middleware in Task 5.
-  .post(postValidationRules, createPost); 
+  // Add 'upload.single('featuredImage')' to handle the file upload
+  .post(upload.single('featuredImage'), postValidationRules, createPost); 
 
-// Base path: /api/posts/:id
 router.route('/:id')
   .get(getPost)
-  // Temporarily unprotected.
-  .put(postValidationRules, updatePost)
-  // Temporarily unprotected.
+  .put(upload.single('featuredImage'), postValidationRules, updatePost) // Allow updates too
   .delete(deletePost);
 
 module.exports = router;
