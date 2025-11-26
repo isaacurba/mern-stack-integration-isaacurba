@@ -1,78 +1,46 @@
-# MERN Stack Integration Assignment
+# 🚀 MERN Stack Blog Application
 
-This assignment focuses on building a full-stack MERN (MongoDB, Express.js, React.js, Node.js) application that demonstrates seamless integration between front-end and back-end components.
+A full-stack blog application built with MongoDB, Express.js, React.js, and Node.js. This project demonstrates a complete CRUD workflow, user authentication, image uploads, and interactive features like comments and search.
 
-## Assignment Overview
+## ✨ Features Implemented
 
-You will build a blog application with the following features:
-1. RESTful API with Express.js and MongoDB
-2. React front-end with component architecture
-3. Full CRUD functionality for blog posts
-4. User authentication and authorization
-5. Advanced features like image uploads and comments
+* **Authentication & Security:**
+    * User Registration and Login (JWT-based authentication).
+    * Password hashing with bcrypt.
+    * Protected routes (only logged-in users can write/edit/delete).
+* **Blog Management (CRUD):**
+    * **Create:** Write posts with a rich text content, category selection, and cover image upload.
+    * **Read:** View paginated lists of posts and detailed single post views.
+    * **Update:** Edit existing posts and update cover images.
+    * **Delete:** Remove posts (Author only).
+* **Advanced Features:**
+    * 🖼️ **Image Uploads:** Local file storage using Multer.
+    * 🔍 **Search & Pagination:** Filter posts by keyword and navigate through pages.
+    * 💬 **Comments System:** Logged-in users can discuss posts.
+    * 🏷️ **Categories:** Organize posts by topics.
+* **UI/UX:**
+    * Responsive design using Tailwind CSS.
+    * Dynamic Navbar (changes based on login state).
+    * Loading states and error handling.
 
-## Project Structure
+## 🛠️ Tech Stack
 
-```
-mern-blog/
-├── client/                 # React front-end
-│   ├── public/             # Static files
-│   ├── src/                # React source code
-│   │   ├── components/     # Reusable components
-│   │   ├── pages/          # Page components
-│   │   ├── hooks/          # Custom React hooks
-│   │   ├── services/       # API services
-│   │   ├── context/        # React context providers
-│   │   └── App.jsx         # Main application component
-│   └── package.json        # Client dependencies
-├── server/                 # Express.js back-end
-│   ├── config/             # Configuration files
-│   ├── controllers/        # Route controllers
-│   ├── models/             # Mongoose models
-│   ├── routes/             # API routes
-│   ├── middleware/         # Custom middleware
-│   ├── utils/              # Utility functions
-│   ├── server.js           # Main server file
-│   └── package.json        # Server dependencies
-└── README.md               # Project documentation
-```
+* **Frontend:** React (Vite), Tailwind CSS, React Router DOM, Axios.
+* **Backend:** Node.js, Express.js.
+* **Database:** MongoDB (Mongoose ODM).
+* **Utilities:** Multer (Uploads), JWT (Auth), BCrypt (Security).
 
-## Getting Started
+---
 
-1. Accept the GitHub Classroom assignment invitation
-2. Clone your personal repository that was created by GitHub Classroom
-3. Follow the setup instructions in the `Week4-Assignment.md` file
-4. Complete the tasks outlined in the assignment
+## ⚙️ Setup & Installation Instructions
 
-## Files Included
+Follow these steps to run the project locally.
 
-- `Week4-Assignment.md`: Detailed assignment instructions
-- Starter code for both client and server:
-  - Basic project structure
-  - Configuration files
-  - Sample models and components
+### 1. Prerequisites
+* Node.js (v18+) installed.
+* MongoDB installed locally or a MongoDB Atlas connection string.
 
-## Requirements
-
-- Node.js (v18 or higher)
-- MongoDB (local installation or Atlas account)
-- npm or yarn
-- Git
-
-## Submission
-
-Your work will be automatically submitted when you push to your GitHub Classroom repository. Make sure to:
-
-1. Complete both the client and server portions of the application
-2. Implement all required API endpoints
-3. Create the necessary React components and hooks
-4. Document your API and setup process in the README.md
-5. Include screenshots of your working application
-
-## Resources
-
-- [MongoDB Documentation](https://docs.mongodb.com/)
-- [Express.js Documentation](https://expressjs.com/)
-- [React Documentation](https://react.dev/)
-- [Node.js Documentation](https://nodejs.org/en/docs/)
-- [Mongoose Documentation](https://mongoosejs.com/docs/) 
+### 2. Clone the Repository
+```bash
+git clone https://github.com/PLP-MERN-Stack-Development/mern-stack-integration-isaacurba
+cd mern-blog

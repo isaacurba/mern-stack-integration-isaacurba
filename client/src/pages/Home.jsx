@@ -30,7 +30,7 @@ const Home = () => {
       }
     };
 
-    // Debounce search (wait 500ms after typing stops to call API)
+    // Debounce: Wait 500ms after typing stops before calling API
     const timeoutId = setTimeout(() => {
       fetchPosts();
     }, 500);
@@ -38,7 +38,6 @@ const Home = () => {
     return () => clearTimeout(timeoutId);
   }, [page, search]);
 
-  // Handle Search Input
   const handleSearch = (e) => {
     setSearch(e.target.value);
     setPage(1); // Reset to page 1 when searching
@@ -46,10 +45,9 @@ const Home = () => {
 
   return (
     <div>
+      {/* Search Bar Header */}
       <div className="flex flex-col md:flex-row justify-between items-center mb-8 border-b pb-6">
         <h1 className="text-3xl font-bold text-gray-800 mb-4 md:mb-0">Latest Articles</h1>
-        
-        {/* Search Bar */}
         <input
           type="text"
           placeholder="Search posts..."
@@ -59,6 +57,7 @@ const Home = () => {
         />
       </div>
 
+      {/* Content Area */}
       {loading ? (
         <div className="text-center py-20 text-xl text-gray-500">Loading...</div>
       ) : error ? (
@@ -101,4 +100,4 @@ const Home = () => {
   );
 };
 
-export default Home;F
+export default Home;
